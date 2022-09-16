@@ -190,7 +190,7 @@ void serial_transport_poll(serial_transport_t self)
                 n->retrans_max_count, n->wait_ack_ticks) != SERIAL_MAC_EX_TRANS_BUSY) {
             _lock(self);
             list_del(&n->node);
-            if(!self->cur_blocked_count) {
+            if(self->cur_blocked_count) {
                 self->cur_blocked_count--;
             }
             _unlock(self);
