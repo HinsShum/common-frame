@@ -405,7 +405,7 @@ void fullduplex_serial_mac_called_per_tick(serial_mac_t self)
                 break;
             }
         }
-        if(self->transmitter.retrans_counter == 0 || self->transmitter.retrans_counter >= self->transmitter.retrans_max_value) {
+        if(self->transmitter.retrans_max_value == 0 || self->transmitter.retrans_counter >= self->transmitter.retrans_max_value) {
             _clear_transmitter(&self->transmitter);
             break;
         }
