@@ -23,7 +23,7 @@
 
 /*---------- includes ----------*/
 #include "resource_manager.h"
-#include "list.h"
+#include "lists.h"
 #include "options.h"
 #include <string.h>
 
