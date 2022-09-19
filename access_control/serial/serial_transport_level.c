@@ -23,7 +23,7 @@
 
 /*---------- includes ----------*/
 #include "serial_transport_level.h"
-#include "list.h"
+#include "lists.h"
 #include "options.h"
 #include <string.h>
 
