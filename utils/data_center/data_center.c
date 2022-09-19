@@ -27,6 +27,8 @@
 #include <string.h>
 
 /*---------- macro ----------*/
+#define TAG                                     "DataCenter"
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
@@ -67,19 +69,19 @@ static bool _add_account(data_center_t center, account_t account)
             break;
         }
         if(account == &center->account_main) {
-            __debug_warn("Data Center: Account Main(%s) can not add itself\n", account->id);
+            xlog_tag_warn(TAG, "Account Main(%s) can not add itself\n", account->id);
             break;
         }
         if(_search_account(center, account->id) != NULL) {
-            __debug_error("Data Center: multi add Account(%s)\n", account->id);
+            xlog_tag_error(TAG, "multi add Account(%s)\n", account->id);
             break;
         }
         p = __malloc(sizeof(struct account_node));
         if(p == NULL) {
-            __debug_error("Data Center: alloc memory for Account(%s) to add account pool failed\n", account->id);
+            xlog_tag_error(TAG, "alloc memory for Account(%s) to add account pool failed\n", account->id);
             break;
         }
-        __debug_message("Data Center: alloc 0x%p for new Account(%s) to add account pool\n", p, account->id);
+        xlog_tag_message(TAG, "alloc 0x%p for new Account(%s) to add account pool\n", p, account->id);
         /* push account to account pool */
         memset(p, 0, sizeof(*p));
         p->account = account;
@@ -103,7 +105,7 @@ static bool _remove(struct list_head *pool, account_t account)
         }
         list_for_each_entry_safe(p, n, struct account_node, pool, node) {
             if(__match_by_name(p->account->id, account->id) == true) {
-                __debug_info("Data Center: remove account(%s) from account pool at 0x%p ok\n", account->id, p);
+                xlog_tag_info(TAG, "remove account(%s) from account pool at 0x%p ok\n", account->id, p);
                 list_del(&p->node);
                 __free(p);
                 retval = true;
@@ -111,7 +113,7 @@ static bool _remove(struct list_head *pool, account_t account)
             }
         }
         if(retval == false) {
-            __debug_error("Data Center: account(%s) was not found in account pool\n", account->id);
+            xlog_tag_error(TAG, "account(%s) was not found in account pool\n", account->id);
         }
     } while(0);
 

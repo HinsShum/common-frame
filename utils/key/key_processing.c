@@ -29,6 +29,7 @@
 /*---------- macro ----------*/
 #define KEY_LONG_PRESS_TIME                 (500)       /*<< 500ms */
 #define KEY_PRESSING_READ_PERIOD            (200)       /*<< 200ms */
+#define TAG                                 "KEYPROCESSING"
 
 /*---------- type define ----------*/
 struct key_proc {
@@ -111,10 +112,10 @@ key_proc_t key_processing_create(const void *user_data, key_input_cb_t input_cb,
     do {
         key = __malloc(sizeof(struct key_proc));
         if(key == NULL) {
-            __debug_error("No memory for alloc key processing\n");
+            xlog_tag_error(TAG, "No memory for alloc key processing\n");
             break;
         }
-        __debug_message("Key Process: alloc 0x%p for new key\n", key);
+        xlog_tag_message(TAG, "alloc 0x%p for new key\n", key);
         memset(key, 0, sizeof(*key));
         key->pressed = false;
         key->released = true;

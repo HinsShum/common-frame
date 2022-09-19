@@ -28,6 +28,8 @@
 #include <string.h>
 
 /*---------- macro ----------*/
+#define TAG                                         "ResourceManager"
+
 /*---------- type define ----------*/
 typedef struct resource_manager *resource_manager_t;
 struct resource_manager {
@@ -75,24 +77,24 @@ static bool _add_resource(const resource_manager_base_t base, const char *name, 
 
     do {
         if(manager == NULL) {
-            __debug_error("Resource: base is invalid, add resource failed\n");
+            xlog_tag_error(TAG, "base is invalid, add resource failed\n");
             break;
         }
         node = __malloc(sizeof(struct resource_node));
         if(node == NULL) {
-            __debug_error("No enough memory to add resource\n");
+            xlog_tag_error(TAG, "No enough memory to add resource\n");
             break;
         }
-        __debug_message("Alloc 0x%p for new resource\n", node);
+        xlog_tag_message(TAG, "Alloc 0x%p for new resource\n", node);
         memset(node, 0, sizeof(struct resource_node));
         if(_search_node(manager, name, node)) {
-            __debug_warn("Resource: %s was registered\n", name);
+            xlog_tag_warn(TAG, "%s was registered\n", name);
             break;
         }
         node->name = name;
         node->ptr = ptr;
         list_add_tail(&node->node, &manager->head);
-        __debug_message("Resource: %s[0x%p] add success\n", node->name, node->ptr);
+        xlog_tag_message(TAG, "%s[0x%p] add success\n", node->name, node->ptr);
         retval = true;
     } while(0);
 
@@ -108,17 +110,17 @@ static bool _remove_resource(const resource_manager_base_t base, const char *nam
 
     do {
         if(manager == NULL) {
-            __debug_error("Resource: base is invalid, remove resource failed\n");
+            xlog_tag_error(TAG, "base is invalid, remove resource failed\n");
             break;
         }
         if(_search_node(manager, name, &node) != true) {
-            __debug_error("Resource: %s was not found\n", name);
+            xlog_tag_error(TAG, "%s was not found\n", name);
             break;
         }
         list = node.node.next->prev;
         list_del(list);
         __free(list_entry(list, struct resource_node, node));
-        __debug_message("Resource: %s remove success\n", name);
+        xlog_tag_message(TAG, "%s remove success\n", name);
         retval = true;
     } while(0);
 
@@ -133,16 +135,16 @@ static void *_get_resource(const resource_manager_base_t base, const char *name)
 
     do {
         if(manager == NULL) {
-            __debug_error("Resource: base is invalid, get resource failed\n");
+            xlog_tag_error(TAG, "base is invalid, get resource failed\n");
             break;
         }
         ptr = manager->default_ptr;
         if(_search_node(manager, name, &node) != true) {
-            __debug_warn("Resource: %s was not found, return default[0x%p]\n", name, manager->default_ptr);
+            xlog_tag_warn(TAG, "%s was not found, return default[0x%p]\n", name, manager->default_ptr);
             break;
         }
         ptr = node.ptr;
-        __debug_message("Resource: %s[0x%p] was found\n", name, ptr);
+        xlog_tag_message(TAG, "%s[0x%p] was found\n", name, ptr);
     } while(0);
 
     return ptr;
@@ -174,11 +176,11 @@ static void _set_default(resource_manager_base_t base, void *ptr)
 
     do {
         if(manager == NULL) {
-            __debug_error("Resource: base is invalid args, set default failed\n");
+            xlog_tag_error(TAG, "base is invalid args, set default failed\n");
             break;
         }
         manager->default_ptr = ptr;
-        __debug_message("Resource: set [0x%p] to default\n", manager->default_ptr);
+        xlog_tag_message(TAG, "set [0x%p] to default\n", manager->default_ptr);
     } while(0);
 }
 
@@ -189,7 +191,7 @@ resource_manager_base_t resource_manager_create(void)
     do {
         manager = __malloc(sizeof(struct resource_manager));
         if(manager == NULL) {
-            __debug_error("No enough memory to create resource manager\n");
+            xlog_tag_error(TAG, "No enough memory to create resource manager\n");
             break;
         }
         memset(manager, 0, sizeof(struct resource_manager));
@@ -212,7 +214,7 @@ void resource_manager_destroy(resource_manager_base_t base)
 
     do {
         if(manager == NULL) {
-            __debug_error("Resource: base is invalid, destroy resource manager failed\n");
+            xlog_tag_error(TAG, "base is invalid, destroy resource manager failed\n");
             break;
         }
         if(list_empty(&manager->head) != true) {
@@ -222,6 +224,6 @@ void resource_manager_destroy(resource_manager_base_t base)
             }
         }
         __free(manager);
-        __debug_message("Resource: destroy resource manager success\n");
+        xlog_tag_message(TAG, "destroy resource manager success\n");
     } while(0);
 }

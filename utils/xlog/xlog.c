@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef CONFIG_USE_XLOG
 /*---------- macro ----------*/
 /* log buffer defitions
  */
@@ -347,3 +348,38 @@ void xlog_deinit(void)
     _xlog.ops.release_console = NULL;
     _xlog.ops.print = NULL;
 }
+#else
+uint32_t __attribute__((format(printf, 1, 0))) xlog(const char *fmt, ...)
+{
+    return 0;
+}
+
+xlog_print_func_t xlog_set_print_func(xlog_print_func_t print)
+{
+    (void)print;
+
+    return print;
+}
+
+bool xlog_set_log_level(const char *level)
+{
+    (void)level;
+
+    return true;
+}
+
+void xlog_hide_log_type(bool hide)
+{
+    (void)hide;
+}
+
+void xlog_init(xlog_ops_t *ops)
+{
+    (void)ops;
+}
+
+void xlog_deinit(void)
+{
+}
+
+#endif

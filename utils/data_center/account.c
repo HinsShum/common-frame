@@ -29,6 +29,8 @@
 #include <string.h>
 
 /*---------- macro ----------*/
+#define TAG                                 "Account"
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
@@ -49,29 +51,29 @@ static account_t _subscribe(account_t account, const char *pub_id)
             break;
         }
         if(__match_by_name(account->id, pub_id) == true) {
-            __debug_error("Account: %s try to subscribe to itself\n", pub_id);
+            xlog_tag_error(TAG, "%s try to subscribe to itself\n", pub_id);
             break;
         }
         pub = account->center->ops.find(&account->publishers, pub_id);
         if(pub != NULL) {
-            __debug_error("Account: multi subscribe pub(%s)\n", pub_id);
+            xlog_tag_error(TAG, "multi subscribe pub(%s)\n", pub_id);
             pub = NULL;
             break;
         }
         pub = account->center->ops.search_account(account->center, pub_id);
         if(pub == NULL) {
-            __debug_error("Account: pub(%s) was not found\n", pub_id);
+            xlog_tag_error(TAG, "pub(%s) was not found\n", pub_id);
             break;
         }
         publisher = __malloc(sizeof(struct account_node));
         if(publisher == NULL) {
-            __debug_error("Account: alloc memory for pub(%s) publish account(%s) failed\n", pub_id, account->id);
+            xlog_tag_error(TAG, "alloc memory for pub(%s) publish account(%s) failed\n", pub_id, account->id);
             pub = NULL;
             break;
         }
         subscriber = __malloc(sizeof(struct account_node));
         if(subscriber == NULL) {
-            __debug_error("Account: alloc memory for sub(%s) subscribe account(%s) failed\n", account->id, pub_id);
+            xlog_tag_error(TAG, "alloc memory for sub(%s) subscribe account(%s) failed\n", account->id, pub_id);
             __free(publisher);
             pub = NULL;
             break;
@@ -84,7 +86,7 @@ static account_t _subscribe(account_t account, const char *pub_id)
         memset(subscriber, 0, sizeof(*subscriber));
         subscriber->account = account;
         list_add_tail(&subscriber->node, &pub->subscribers);
-        __debug_info("Account: sub(%s) subscribed pub(%s)\n", account->id, pub_id);
+        xlog_tag_info(TAG, "sub(%s) subscribed pub(%s)\n", account->id, pub_id);
     } while(0);
 
     return pub;
@@ -120,14 +122,14 @@ static bool _commit(account_t account, const void *data, uint32_t size)
 
     do {
         if(size == 0 || size != account->priv.buffer_size) {
-            __debug_error("Account: pub(%s) has not cache or size mismatch\n", account->id);
+            xlog_tag_error(TAG, "pub(%s) has not cache or size mismatch\n", account->id);
             break;
         }
         /* subcommit data to cache */
         pingpong_buffer_get_write_buf(&account->priv.buffer_manager, &wbuf);
         memcpy(wbuf, data, size);
         pingpong_buffer_set_write_done(&account->priv.buffer_manager);
-        __debug_info("Account: pub(%s) commit data(0x%p)[%d] >> data(0x%p)[%d] done\n", account->id, data, size, wbuf, size);
+        xlog_tag_info(TAG, "pub(%s) commit data(0x%p)[%d] >> data(0x%p)[%d] done\n", account->id, data, size, wbuf, size);
         retval = true;
     } while(0);
 
@@ -147,12 +149,12 @@ static int32_t _publish(account_t account)
             break;
         }
         if(account->priv.buffer_size == 0) {
-            __debug_error("Account: pub(%s) has no cache\n", account->id);
+            xlog_tag_error(TAG, "pub(%s) has no cache\n", account->id);
             retval = -ACCOUNT_ERR_NO_CACHE;
             break;
         }
         if(pingpong_buffer_get_read_buf(&account->priv.buffer_manager, &rbuf) == false) {
-            __debug_error("Account: pub(%s) data was not commit\n", account->id);
+            xlog_tag_error(TAG, "pub(%s) data was not commit\n", account->id);
             retval = -ACCOUNT_ERR_NO_COMMITED;
             break;
         }
@@ -165,13 +167,13 @@ static int32_t _publish(account_t account)
         list_for_each_entry(subscriber, struct account_node, &account->subscribers, node) {
             account_t sub = subscriber->account;
             account_event_cb_t cb = sub->priv.event_cb;
-            __debug_info("Account: pub(%s) push >> data(0x%p)[%d] >> sub(%s)\n", account->id, param.data, param.size, sub->id);
+            xlog_tag_info(TAG, "pub(%s) push >> data(0x%p)[%d] >> sub(%s)\n", account->id, param.data, param.size, sub->id);
             if(cb) {
                 param.recv = sub;
                 retval = cb(sub, &param);
-                __debug_info("Account: push done: %d\n", retval);
+                xlog_tag_info(TAG, "push done: %d\n", retval);
             } else {
-                __debug_info("Account: sub(%s) not register callback\n", account->id);
+                xlog_tag_info(TAG, "sub(%s) not register callback\n", account->id);
             }
         }
         pingpong_buffer_set_read_done(&account->priv.buffer_manager);
@@ -190,7 +192,7 @@ static int32_t _pull_from_publisher(account_t sub, account_t pub, void *data, ui
         if(pub == NULL) {
             break;
         }
-        __debug_info("Account: sub(%s) pull << data(0x%p)[%d] << pub(%s)\n", sub->id, data, size, pub->id);
+        xlog_tag_info(TAG, "sub(%s) pull << data(0x%p)[%d] << pub(%s)\n", sub->id, data, size, pub->id);
         cb = pub->priv.event_cb;
         if(cb) {
             struct account_event_param param = {0};
@@ -200,21 +202,21 @@ static int32_t _pull_from_publisher(account_t sub, account_t pub, void *data, ui
             param.data = data;
             param.size = size;
             retval = cb(pub, &param);
-            __debug_info("Account: pull done: %d\n", retval);
+            xlog_tag_info(TAG, "pull done: %d\n", retval);
             break;
         }
-        __debug_info("Account: pub(%s) not register pull callback, read commit cache\n", pub->id);
+        xlog_tag_info(TAG, "pub(%s) not register pull callback, read commit cache\n", pub->id);
         if(pub->priv.buffer_size != size) {
-            __debug_error("Account: data size pub(%s): %d != sub(%s): %d\n", pub->id, pub->priv.buffer_size, sub->id, size);
+            xlog_tag_error(TAG, "data size pub(%s): %d != sub(%s): %d\n", pub->id, pub->priv.buffer_size, sub->id, size);
             break;
         }
         if(pingpong_buffer_get_read_buf(&pub->priv.buffer_manager, &rbuf) == true) {
             memcpy(data, rbuf, size);
             pingpong_buffer_set_read_done(&pub->priv.buffer_manager);
-            __debug_info("Account: read done\n");
+            xlog_tag_info(TAG, "read done\n");
             retval = ACCOUNT_ERR_NONE;
         } else {
-            __debug_warn("Account: pub(%s) data was not commit\n", pub->id);
+            xlog_tag_warn(TAG, "pub(%s) data was not commit\n", pub->id);
         }
     } while(0);
 
@@ -232,7 +234,7 @@ static int32_t _pull(account_t account, const char *pub_id, void *data, uint32_t
         }
         pub = account->center->ops.find(&account->publishers, pub_id);
         if(pub == NULL) {
-            __debug_error("Account: sub(%s) was not subscribe pub(%s)\n", account->id, pub->id);
+            xlog_tag_error(TAG, "sub(%s) was not subscribe pub(%s)\n", account->id, pub->id);
             break;
         }
         retval = _pull_from_publisher(account, pub, data, size);
@@ -251,10 +253,10 @@ static int32_t _notify_publisher(account_t sub, account_t pub, const void *data,
         if(pub == NULL) {
             break;
         }
-        __debug_info("Account: sub(%s) notify >> data(0x%p)[%d] >> pub(%s)\n", sub->id, data, size, pub->id);
+        xlog_tag_info(TAG, "sub(%s) notify >> data(0x%p)[%d] >> pub(%s)\n", sub->id, data, size, pub->id);
         cb = pub->priv.event_cb;
         if(cb == NULL) {
-            __debug_warn("Account: pub(%s) not register callback\n", pub->id);
+            xlog_tag_warn(TAG, "pub(%s) not register callback\n", pub->id);
             retval = -ACCOUNT_ERR_NO_CALLBACK;
             break;
         }
@@ -264,7 +266,7 @@ static int32_t _notify_publisher(account_t sub, account_t pub, const void *data,
         param.data = (void *)data;
         param.size = size;
         retval = cb(pub, &param);
-        __debug_info("Account: notify done: %d\n", retval);
+        xlog_tag_info(TAG, "notify done: %d\n", retval);
     } while(0);
 
     return retval;
@@ -281,7 +283,7 @@ static int32_t _notify(account_t account, const char *pub_id, const void *data, 
         }
         pub = account->center->ops.find(&account->publishers, pub_id);
         if(pub == NULL) {
-            __debug_error("Account: sub(%s) was not subscribe pub(%s)\n", account->id, pub_id);
+            xlog_tag_error(TAG, "sub(%s) was not subscribe pub(%s)\n", account->id, pub_id);
             break;
         }
         retval = _notify_publisher(account, pub, data, size);
@@ -396,24 +398,24 @@ bool account_create(account_t account, const char *id, data_center_t center, uin
         if(buf_size != 0) {
             uint8_t *buf0 = __malloc(buf_size);
             if(buf0 == NULL) {
-                __debug_error("Account(%s) buf0 alloc failed\n", id);
+                xlog_tag_error(TAG, "%s buf0 alloc failed\n", id);
                 break;
             }
             uint8_t *buf1 = __malloc(buf_size);
             if(buf1 == NULL) {
                 __free(buf0);
-                __debug_error("Account(%s) buf1 alloc failed\n", id);
+                xlog_tag_error(TAG, "%s buf1 alloc failed\n", id);
                 break;
             }
             memset(buf0, 0, buf_size);
             memset(buf1, 0, buf_size);
             pingpong_buffer_init(&account->priv.buffer_manager, buf0, buf1);
-            __debug_info("Account(%s) cached %d x2 bytes\n", id, buf_size);
+            xlog_tag_info(TAG, "%s cached %d x2 bytes\n", id, buf_size);
             account->priv.buffer_size = buf_size;
         }
         center->ops.add_account(center, account);
         retval = true;
-        __debug_info("Account(%s) created\n", id);
+        xlog_tag_info(TAG, "%s created\n", id);
     } while(0);
 
     return retval;
@@ -426,7 +428,7 @@ void account_destroy(account_t account)
     account_t pub = NULL;
 
     if(account) {
-        __debug_info("Account: account(%s) destroy...\n", account->id);
+        xlog_tag_info(TAG, "account(%s) destroy...\n", account->id);
         /* release cache */
         if(account->priv.buffer_size) {
             __free(account->priv.buffer_manager.buffer[0]);
@@ -438,13 +440,13 @@ void account_destroy(account_t account)
         if(account->priv.timer) {
             soft_timer_destroy(account->priv.timer);
             account->priv.timer = NULL;
-            __debug_info("Account: account(%s) timer delete\n", account->id);
+            xlog_tag_info(TAG, "account(%s) timer delete\n", account->id);
         }
         /* let subscribers unfollow */
         list_for_each_entry_safe(p, n, struct account_node, &account->subscribers, node) {
             sub = p->account;
             sub->ops.unsubscribe(sub, account->id);
-            __debug_info("Account: sub(%s) unsubscribe pub(%s)\n", sub->id, account->id);
+            xlog_tag_info(TAG, "sub(%s) unsubscribe pub(%s)\n", sub->id, account->id);
         }
         /* ask the publisher to delete this subscriber */
         list_for_each_entry_safe(p, n, struct account_node, &account->publishers, node) {
@@ -452,9 +454,9 @@ void account_destroy(account_t account)
             account->center->ops.remove(&pub->subscribers, account);
             list_del(&p->node);
             __free(p);
-            __debug_info("Account: pub(%s) remove sub(%s)\n", pub->id, account->id);
+            xlog_tag_info(TAG, "pub(%s) remove sub(%s)\n", pub->id, account->id);
         }
         account->center->ops.remove_account(account->center, account);
-        __debug_info("Account: account(%s) destroy\n", account->id);
+        xlog_tag_info(TAG, "account(%s) destroy\n", account->id);
     }
 }

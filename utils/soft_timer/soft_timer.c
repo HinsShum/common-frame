@@ -28,6 +28,8 @@
 #include <string.h>
 
 /*---------- macro ----------*/
+#define TAG                                 "SoftTimer"
+
 /*---------- type define ----------*/
 struct timer_tcb {
     struct list_head node;
@@ -150,16 +152,16 @@ timer_handle_t soft_timer_create(const char *name, soft_timer_mode_t mode, uint3
 
     do {
         if(!period) {
-            __debug_error("SoftTimer's period can not be zero\n");
+            xlog_tag_error(TAG, "SoftTimer's period can not be zero\n");
             break;
         }
         if(mode > SFTIM_MODE_REPEAT) {
-            __debug_error("SoftTimer's mode para format error\n");
+            xlog_tag_error(TAG, "SoftTimer's mode para format error\n");
             break;
         }
         tcb = __malloc(sizeof(struct timer_tcb));
         if(!tcb) {
-            __debug_error("No memory to alloc new tiemr tcb\n");
+            xlog_tag_error(TAG, "No memory to alloc new tiemr tcb\n");
             break;
         }
         memset(tcb, 0, sizeof(struct timer_tcb));
