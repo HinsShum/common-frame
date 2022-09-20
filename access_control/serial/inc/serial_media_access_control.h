@@ -100,7 +100,7 @@ struct serial_mac_ops {
  * @param trans_capacity Media access controller will create one transport buffer with a size of trans_capacity bytes.
  * @param ops Hardware operate callback pointer. It contains serial hardware, timer hardware and event.
  * 
- * @retval If the media access controller is sucessfully created the a handle to the newly controller is returned.
+ * @retval If the media access controller is sucessfully created then a handle to the newly controller is returned.
  * If the controller cannot be created because there is insufficient heap remaining to allocate the controller
  * structure or hardware initialize failure then NULL is returned.
  */
@@ -131,8 +131,8 @@ extern void serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbuf, u
  * @brief Put a series of data to controller's transmitter. The API different from serial_mac_set_transmitter(),
  * it cached data and will try to re-transport if @retrans_count is not zero and 
  * serial_mac_clear_transmitter() not be called during wait ack period.
- * @param self The handle of the controller being set transmitter cache.
- * @param pbuf A series of data being set to transmitter cache.
+ * @param self The handle of the controller being set to transmitter cache.
+ * @param pbuf A series of the data being set to transmitter cache.
  * @param length Length of the data being set to transmitter cache.
  * @param retrans_count Re-transport count if not receive ack packet.
  * @param wait_ack_ticks Maximum ticks to wait a ack packet. Only valid for SERIAL_MAC_TYPE_FULLDUPLEX access controller.

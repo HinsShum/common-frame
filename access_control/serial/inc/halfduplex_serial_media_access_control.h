@@ -66,7 +66,7 @@ extern void halfduplex_serial_media_access_controller_delete(serial_mac_t self);
 /**
  * @brief Put a series of data to controller's transmitter. But it should be noted that the API does not cached
  * data, it will called the serial hardware interface to send data directly.
- * @param self The handle of the controller being set transitter.
+ * @param self The handle of the controller being set transmitter.
  * @param pbuf A series of data being set to transmitter.
  * @param length Length of the data being set to transmitter.
  * 
@@ -78,8 +78,8 @@ extern void halfduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8
  * @brief Put a series of data to controller's transmitter. The API different from halfduplex_serial_mac_set_transmitter(),
  * it cached data and will try to re-transport if @retrans_count is not zero and 
  * halfduplex_serial_mac_clear_transmitter() not be called during wait ack period.
- * @param self The handle of the controller being set transmitter cache.
- * @param pbuf A series of data being set to transmitter cache.
+ * @param self The handle of the controller being set to transmitter cache.
+ * @param pbuf A series of the data being set to transmitter cache.
  * @param length Length of the data being set to transmitter cache.
  * @param retrans_count Re-transport count if not receive ack packet.
  * @param no_use Not used
