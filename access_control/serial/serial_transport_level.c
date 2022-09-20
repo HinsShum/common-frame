@@ -90,7 +90,7 @@ serial_transport_t serial_transport_new(serial_mac_type_t type, uint32_t baudrat
         INIT_LIST_HEAD(&self->head);
         self->ops.lock = ops->lock;
         self->ops.unlock = ops->unlock;
-        self->handle = serial_media_access_control_new((serial_mac_type_t)type, baudrate, 
+        self->handle = serial_mac_new((serial_mac_type_t)type, baudrate, 
                 recv_capacity, trans_capacity, &ops->mac_ops);
         if(!self->handle) {
             __free(self);
@@ -113,7 +113,7 @@ void serial_transport_delete(serial_transport_t self)
     }
     self->cur_blocked_count = 0;
     _unlock(self);
-    serial_access_control_delete(self->handle);
+    serial_mac_delete(self->handle);
     __free(self);
 }
 
@@ -121,7 +121,7 @@ void serial_transport_set_transmitter(serial_transport_t self, const uint8_t *pb
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_set_transmitter(self->handle, pbuf, length);
+    serial_mac_set_transmitter(self->handle, pbuf, length);
 }
 
 serial_transport_expection_t serial_transport_set_transmitter_cache(serial_transport_t self, const uint8_t *pbuf,
@@ -162,31 +162,31 @@ void serial_transport_clear_transmitter(serial_transport_t self)
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_clear_transmitter(self->handle);
+    serial_mac_clear_transmitter(self->handle);
 }
 
 void serial_transport_recv_byte(serial_transport_t self, uint8_t byte)
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_recv_byte(self->handle, byte);
+    serial_mac_recv_byte(self->handle, byte);
 }
 
 void serial_transport_timer_expired(serial_transport_t self)
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_timer_expired(self->handle);
+    serial_mac_timer_expired(self->handle);
 }
 
 void serial_transport_poll(serial_transport_t self)
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_poll(self->handle);
+    serial_mac_poll(self->handle);
     if(!list_empty_careful(&self->head)) {
         node_t n = list_first_entry(&self->head, struct node, node);
-        if(serial_access_control_set_transmitter_cache(self->handle, n->pbuf, n->length, 
+        if(serial_mac_set_transmitter_cache(self->handle, n->pbuf, n->length, 
                 n->retrans_max_count, n->wait_ack_ticks) != SERIAL_MAC_EX_TRANS_BUSY) {
             _lock(self);
             list_del(&n->node);
@@ -203,5 +203,5 @@ void serial_transport_called_per_tick(serial_transport_t self)
 {
     assert(self);
     assert(self->handle);
-    serial_access_control_called_per_tick(self->handle);
+    serial_mac_called_per_tick(self->handle);
 }

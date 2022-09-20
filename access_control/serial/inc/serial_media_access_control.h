@@ -104,17 +104,17 @@ struct serial_mac_ops {
  * If the controller cannot be created because there is insufficient heap remaining to allocate the controller
  * structure or hardware initialize failure then NULL is returned.
  */
-extern serial_mac_t serial_media_access_control_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
+extern serial_mac_t serial_mac_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
         uint32_t trans_capacity, struct serial_mac_ops *ops);
 
 /**
- * @brief Delete a controller that was previously created using the serial_media_access_control_new()
+ * @brief Delete a controller that was previously created using the serial_mac_new()
  * API function.
  * @param self The handle of the controller being deleted.
  * 
  * @retval None
  */
-extern void serial_access_control_delete(serial_mac_t self);
+extern void serial_mac_delete(serial_mac_t self);
 
 /**
  * @brief Put a series of data to controller's transmitter. But it should be noted that the API does not cached
@@ -125,12 +125,12 @@ extern void serial_access_control_delete(serial_mac_t self);
  * 
  * @retval None
  */
-extern void serial_access_control_set_transmitter(serial_mac_t self, const uint8_t *pbuf, uint32_t length);
+extern void serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbuf, uint32_t length);
 
 /**
- * @brief Put a series of data to controller's transmitter. The API different from serial_access_control_set_transmitter(),
+ * @brief Put a series of data to controller's transmitter. The API different from serial_mac_set_transmitter(),
  * it cached data and will try to re-transport if @retrans_count is not zero and 
- * serial_access_control_clear_transmitter() not be called during wait ack period.
+ * serial_mac_clear_transmitter() not be called during wait ack period.
  * @param self The handle of the controller being set transmitter cache.
  * @param pbuf A series of data being set to transmitter cache.
  * @param length Length of the data being set to transmitter cache.
@@ -141,7 +141,7 @@ extern void serial_access_control_set_transmitter(serial_mac_t self, const uint8
  * If @length large than transmitter buffer capacity, SERIAL_MAC_EX_ERROR is returned.
  * If transmitter caced the @pbuf, SERIAL_MAC_EX_NONE is returned.
  */
-extern serial_mac_expection_t serial_access_control_set_transmitter_cache(serial_mac_t self, const uint8_t *pbuf, uint32_t length,
+extern serial_mac_expection_t serial_mac_set_transmitter_cache(serial_mac_t self, const uint8_t *pbuf, uint32_t length,
         uint16_t retrans_count, uint32_t wait_ack_tick);
 
 /**
@@ -150,26 +150,26 @@ extern serial_mac_expection_t serial_access_control_set_transmitter_cache(serial
  * 
  * @retval None
  */
-extern void serial_access_control_clear_transmitter(serial_mac_t self);
+extern void serial_mac_clear_transmitter(serial_mac_t self);
 
 /**
- * @brief When recv a byte by serial hardware, serial_access_control_recv_byte() API should be called once.
- * @note API serial_access_control_recv_byte() should be regiter to serial hardware interrupt receive server function.
+ * @brief When recv a byte by serial hardware, serial_mac_recv_byte() API should be called once.
+ * @note API serial_mac_recv_byte() should be regiter to serial hardware interrupt receive server function.
  * @param self The handle of controller.
  * @param byte A byte recevied by serial hardware.
  * 
  * @retval None
  */
-extern void serial_access_control_recv_byte(serial_mac_t self, uint8_t byte);
+extern void serial_mac_recv_byte(serial_mac_t self, uint8_t byte);
 
 /**
- * @brief When timer expired, serial_access_control_timer_expired() should be called once.
- * @note API serial_access_control_timer_expired() should be register to timer hardware interrupt server function.
+ * @brief When timer expired, serial_mac_timer_expired() should be called once.
+ * @note API serial_mac_timer_expired() should be register to timer hardware interrupt server function.
  * @param self The handle of controller.
  * 
  * @retval None
  */
-extern void serial_access_control_timer_expired(serial_mac_t self);
+extern void serial_mac_timer_expired(serial_mac_t self);
 
 /**
  * @brief Deal with received event and transport event.
@@ -177,16 +177,16 @@ extern void serial_access_control_timer_expired(serial_mac_t self);
  * 
  * @retval None
  */
-extern void serial_access_control_poll(serial_mac_t self);
+extern void serial_mac_poll(serial_mac_t self);
 
 /**
  * @brief Deal with wait ack timeout event.
- * @note API serial_access_control_called_per_tick() should be register to system tick interrupt server function.
+ * @note API serial_mac_called_per_tick() should be register to system tick interrupt server function.
  * @param self The handle of controller.
  * 
  * @retval None
  */
-extern void serial_access_control_called_per_tick(serial_mac_t self);
+extern void serial_mac_called_per_tick(serial_mac_t self);
 
 #ifdef __cplusplus
 }

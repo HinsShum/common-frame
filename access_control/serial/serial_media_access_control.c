@@ -54,7 +54,7 @@ struct mac {
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-serial_mac_t serial_media_access_control_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
+serial_mac_t serial_mac_new(serial_mac_type_t type, uint32_t baudrate, uint32_t recv_capacity,
         uint32_t trans_capacity, serial_mac_ops_t ops)
 {
     serial_mac_t self = NULL;
@@ -99,7 +99,7 @@ serial_mac_t serial_media_access_control_new(serial_mac_type_t type, uint32_t ba
     return self;
 }
 
-void serial_access_control_delete(serial_mac_t self)
+void serial_mac_delete(serial_mac_t self)
 {
     assert(self);
     assert(self->ops.delete);
@@ -107,14 +107,14 @@ void serial_access_control_delete(serial_mac_t self)
     __free(self);
 }
 
-void serial_access_control_set_transmitter(serial_mac_t self, const uint8_t *pbuf, uint32_t length)
+void serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbuf, uint32_t length)
 {
     assert(self);
     assert(self->ops.set_transmitter);
     self->ops.set_transmitter(self->handle, pbuf, length);
 }
 
-serial_mac_expection_t serial_access_control_set_transmitter_cache(serial_mac_t self, const uint8_t *pbuf, uint32_t length,
+serial_mac_expection_t serial_mac_set_transmitter_cache(serial_mac_t self, const uint8_t *pbuf, uint32_t length,
         uint16_t retrans_count, uint32_t wait_ack_tick)
 {
     assert(self);
@@ -122,35 +122,35 @@ serial_mac_expection_t serial_access_control_set_transmitter_cache(serial_mac_t 
     return self->ops.set_transmitter_cache(self->handle, pbuf, length, retrans_count, wait_ack_tick);
 }
 
-void serial_access_control_clear_transmitter(serial_mac_t self)
+void serial_mac_clear_transmitter(serial_mac_t self)
 {
     assert(self);
     assert(self->ops.clear_transmitter);
     self->ops.clear_transmitter(self->handle);
 }
 
-void serial_access_control_recv_byte(serial_mac_t self, uint8_t byte)
+void serial_mac_recv_byte(serial_mac_t self, uint8_t byte)
 {
     assert(self);
     assert(self->ops.recv_byte);
     self->ops.recv_byte(self->handle, byte);
 }
 
-void serial_access_control_timer_expired(serial_mac_t self)
+void serial_mac_timer_expired(serial_mac_t self)
 {
     assert(self);
     assert(self->ops.timer_expired);
     self->ops.timer_expired(self->handle);
 }
 
-void serial_access_control_poll(serial_mac_t self)
+void serial_mac_poll(serial_mac_t self)
 {
     assert(self);
     assert(self->ops.poll);
     self->ops.poll(self->handle);
 }
 
-void serial_access_control_called_per_tick(serial_mac_t self)
+void serial_mac_called_per_tick(serial_mac_t self)
 {
     assert(self);
     assert(self->ops.called_per_tick);
