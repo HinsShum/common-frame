@@ -101,7 +101,7 @@ extern void serial_transport_set_transmitter(serial_transport_t self, const uint
  * @param pbuf A series of the data being set to transmitter cache.
  * @param length Length of the data being set to transmitter cache.
  * @param retrans_count Re-transport count if not receive ack packet.
- * @param wait_ack_ticks Maximum ticks to wait a ack packet. Only valid for SERIAL_TRANSPORT_TYPE_HALFDUPLEX access controller.
+ * @param wait_ack_ticks Maximum ticks to wait a ack packet. Only valid for SERIAL_TRANSPORT_TYPE_FULLDUPLEX access controller.
  * 
  * @retval If the controller's transmitter no memory to cached new data, SERIAL_TRANSPORT_EX_MEMORY_EMPTY is returned.
  * If transmitter caced the @pbuf, SERIAL_TRANSPORT_EX_NONE is returned.
