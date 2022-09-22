@@ -52,7 +52,7 @@ typedef enum {
 
 struct mac_bus {
     bus_state_t state;
-    uint8_t disf;
+    uint32_t disf;
     uint16_t backoff_counter;
 };
 
