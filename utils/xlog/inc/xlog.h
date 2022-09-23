@@ -83,7 +83,11 @@ typedef void (*xlog_print_func_t)(const char *str, uint32_t length);
  * 
  * @retval The length actually printed or put into the log buffer.
  */
+#ifdef CONFIG_USE_XLOG
 extern uint32_t __attribute__((format(printf, 1, 0))) xlog(const char *fmt, ...);
+#else
+#define xlog(x, y...)
+#endif
 
 /**
  * @brief Set function used to output log entries. 

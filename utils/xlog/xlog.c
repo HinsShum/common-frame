@@ -349,11 +349,6 @@ void xlog_deinit(void)
     _xlog.ops.print = NULL;
 }
 #else
-uint32_t __attribute__((format(printf, 1, 0))) xlog(const char *fmt, ...)
-{
-    return 0;
-}
-
 xlog_print_func_t xlog_set_print_func(xlog_print_func_t print)
 {
     (void)print;
