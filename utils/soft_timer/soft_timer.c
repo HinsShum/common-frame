@@ -207,6 +207,7 @@ void soft_timer_stop(timer_handle_t tcb)
     if(tcb->ops.remove) {
         tcb->ops.remove(tcb);
     }
+    tcb->ops.insert = NULL;
 }
 
 void soft_timer_change_period(timer_handle_t tcb, uint32_t period)
@@ -282,7 +283,9 @@ void soft_timer_poll(void)
             tcb->ops.cb(tcb);
         }
         if(tcb->mode == SFTIM_MODE_REPEAT) {
-            tcb->ops.insert(tcb);
+            if(tcb->ops.insert) {
+                tcb->ops.insert(tcb);
+            }
         }
     }
 }
