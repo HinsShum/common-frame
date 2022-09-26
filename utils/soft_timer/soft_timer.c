@@ -207,7 +207,6 @@ void soft_timer_stop(timer_handle_t tcb)
     if(tcb->ops.remove) {
         tcb->ops.remove(tcb);
     }
-    tcb->ops.insert = NULL;
 }
 
 void soft_timer_change_period(timer_handle_t tcb, uint32_t period)
@@ -278,14 +277,14 @@ void soft_timer_poll(void)
         _lock();
         tcb = list_first_entry(&_timer_ready_list, struct timer_tcb, node);
         _unlock();
+        /* remove from ready list */
         tcb->ops.remove(tcb);
+        /* insert to active list */
+        if(tcb->mode == SFTIM_MODE_REPEAT) {
+            tcb->ops.insert(tcb);
+        }
         if(tcb->ops.cb) {
             tcb->ops.cb(tcb);
-        }
-        if(tcb->mode == SFTIM_MODE_REPEAT) {
-            if(tcb->ops.insert) {
-                tcb->ops.insert(tcb);
-            }
         }
     }
 }
