@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(C_FILES)
-set(INC_VPATH)
+set(INC_VPATH ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 file(GLOB_RECURSE SUBCMAKELISTS "CMakeLists.txt")
 dirname(SUBCMAKELISTS SUBCMAKELISTS_DIRS)
