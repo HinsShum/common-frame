@@ -80,6 +80,7 @@ struct mac_process {
 };
 
 struct mac_ops {
+    uint32_t disf;                  /*<< bus silence time */
     /* serial callback interface */
     bool (*serial_init)(uint32_t baudrate);
     void (*serial_post)(const uint8_t *pbuf, uint32_t length);
@@ -230,6 +231,7 @@ serial_mac_t halfduplex_serial_media_access_controller_new(uint32_t baudrate, ui
         self->ops.event_post = ops->halfduplex.event_post;
         self->ops.event_get = ops->halfduplex.event_get;
         self->ops.receive_packet_parse = ops->receive_packet_parse;
+        self->ops.disf = ops->halfduplex.disf ? ops->halfduplex.disf : DISF;
         /* assign pointer */
         recv_buf0 = ((uint8_t *)self) + sizeof(*self);
         recv_buf1 = recv_buf0 + recv_capacity + sizeof(*preceiver);
@@ -262,7 +264,7 @@ serial_mac_t halfduplex_serial_media_access_controller_new(uint32_t baudrate, ui
         /* configure bus */
         self->bus.state = BUS_IDLE;
         self->bus.backoff_counter = 0;
-        self->bus.disf = DISF;
+        self->bus.disf = self->ops.disf;
     } while(0);
 
     return self;
@@ -288,7 +290,7 @@ void halfduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
 #ifdef CONFIG_SERIAL_MAC_DEBUG
     PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", pbuf, length);
 #endif
-    self->bus.disf = DISF;
+    self->bus.disf = self->ops.disf;
     self->transmitter.state = old_state;
     _mac_bus_unlock(self);
 }
@@ -374,7 +376,7 @@ void halfduplex_serial_mac_timer_expired(serial_mac_t self)
     }
     /* recover bus */
     self->processer.preceiver->state = RECV_IDLE;
-    self->bus.disf = DISF;
+    self->bus.disf = self->ops.disf;
     _mac_bus_unlock(self);
 }
 
@@ -405,7 +407,7 @@ void halfduplex_serial_mac_poll(serial_mac_t self)
                 }
                 break;
             case SERIAL_MAC_EVT_TRANSMITTER_READY:
-                self->bus.disf = DISF;
+                self->bus.disf = self->ops.disf;
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
 #ifdef CONFIG_SERIAL_MAC_DEBUG
