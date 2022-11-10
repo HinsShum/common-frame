@@ -253,7 +253,7 @@ void fullduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
     assert(self->ops.serial_post);
     self->transmitter.state = TRANS_BUSY;
     self->ops.serial_post(pbuf, length);
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
     PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", pbuf, length);
 #endif
     self->transmitter.state = old_state;
@@ -351,7 +351,7 @@ void fullduplex_serial_mac_poll(serial_mac_t self)
     if(self->ops.event_get(&evt)) {
         switch(evt) {
             case SERIAL_MAC_EVT_RECEIVED:
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
                 PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]R", 
                         self->processer.preceiver->pbuf, self->processer.preceiver->pos);
 #endif
@@ -369,7 +369,7 @@ void fullduplex_serial_mac_poll(serial_mac_t self)
             case SERIAL_MAC_EVT_TRANSMITTER_READY:
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
                 PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", self->transmitter.pbuf, self->transmitter.pos);
 #endif
                 self->transmitter.state = TRANS_WAIT_ACK;

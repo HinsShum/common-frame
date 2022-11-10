@@ -124,8 +124,8 @@ static inline uint16_t _get_random_backoff(uint16_t retrans_count)
 {
     uint32_t count = 0;
 
-    if(retrans_count > 5) {
-        retrans_count = 5;
+    if(retrans_count > 8) {
+        retrans_count = 8;
     }
     srand((uint32_t)__get_ticks_from_isr());
     count = rand() % _pow(retrans_count);
@@ -285,7 +285,7 @@ void halfduplex_serial_mac_set_transmitter(serial_mac_t self, const uint8_t *pbu
     _mac_bus_lock(self);
     self->transmitter.state = TRANS_BUSY;
     self->ops.serial_post(pbuf, length);
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
     PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", pbuf, length);
 #endif
     self->bus.disf = DISF;
@@ -389,7 +389,7 @@ void halfduplex_serial_mac_poll(serial_mac_t self)
     if(self->ops.event_get(&evt)) {
         switch(evt) {
             case SERIAL_MAC_EVT_RECEIVED:
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
                 PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]R", 
                         self->processer.preceiver->pbuf, self->processer.preceiver->pos);
 #endif
@@ -408,7 +408,7 @@ void halfduplex_serial_mac_poll(serial_mac_t self)
                 self->bus.disf = DISF;
                 self->transmitter.state = TRANS_BUSY;
                 self->ops.serial_post(self->transmitter.pbuf, self->transmitter.pos);
-#ifdef CONFIG_SERIAL_ACCESS_CONRTOL_DEBUG
+#ifdef CONFIG_SERIAL_MAC_DEBUG
                 PRINT_BUFFER_CONTENT(COLOR_YELLOW, "[Serial]W", self->transmitter.pbuf, self->transmitter.pos);
 #endif
                 self->transmitter.state = TRANS_WAI_ACK;
@@ -442,7 +442,8 @@ void halfduplex_serial_mac_called_per_tick(serial_mac_t self)
         }
         /* update transmitter */
         if(self->transmitter.state == TRANS_WAI_ACK) {
-            if(self->transmitter.retrans_max_value == 0 || self->transmitter.retrans_counter >= self->transmitter.retrans_max_value) {
+            uint16_t retrans_count = self->transmitter.retrans_counter + 1;
+            if(self->transmitter.retrans_max_value == 0 || retrans_count > self->transmitter.retrans_max_value) {
                 _clear_transmitter(&self->transmitter);
                 break;
             }
