@@ -234,7 +234,7 @@ static int32_t _pull(account_t account, const char *pub_id, void *data, uint32_t
         }
         pub = account->center->ops.find(&account->publishers, pub_id);
         if(pub == NULL) {
-            xlog_tag_error(TAG, "sub(%s) was not subscribe pub(%s)\n", account->id, pub->id);
+            xlog_tag_error(TAG, "sub(%s) was not subscribe pub(%s)\n", account->id, pub_id);
             break;
         }
         retval = _pull_from_publisher(account, pub, data, size);
