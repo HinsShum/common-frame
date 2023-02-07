@@ -76,7 +76,7 @@ struct mac_process {
 
 struct mac_ops {
     /* radio callback interface */
-    uint32_t (*radio_receive)(uint8_t *pbuf, uint32_t capacity);
+    uint32_t (*radio_receive)(uint8_t *pbuf, uint32_t capacity, bool continuing);
     void (*radio_post)(const uint8_t *pbuf, uint32_t length);
     /* event callback interface */
     bool (*event_init)(void);
@@ -154,15 +154,23 @@ static uint32_t _get_recv_data(radio_mac_t self)
 {
     uint32_t recv_size = 0;
 
-    self->preceiver->pos = self->ops.radio_receive(self->preceiver->pbuf, self->preceiver->capacity);
+    self->preceiver->pos += self->ops.radio_receive(&self->preceiver->pbuf[self->preceiver->pos],
+            self->preceiver->capacity - self->preceiver->pos, false);
     if(self->preceiver->pos != 0) {
         recv_size = self->preceiver->pos;
         pingpong_buffer_set_write_done(&self->pingpong);
         pingpong_buffer_get_read_buf(&self->pingpong, (void **)&self->processer.preceiver);
         pingpong_buffer_get_write_buf(&self->pingpong, (void **)&self->preceiver);
+        self->preceiver->pos = 0;
     }
 
     return recv_size;
+}
+
+static void _get_recv_data_continue(radio_mac_t self)
+{
+    self->preceiver->pos += self->ops.radio_receive(&self->preceiver->pbuf[self->preceiver->pos],
+            self->preceiver->capacity - self->preceiver->pos, true);
 }
 
 static radio_mac_expection_t _port_level_init(radio_mac_ops_t ops)
@@ -342,6 +350,10 @@ void radio_mac_poll(radio_mac_t self)
                         self->ops.receive_packet_parse(self->processer.pbuf, self->processer.pos, NULL, 0);
                     }
                 }
+                break;
+            case RADIO_MAC_EVT_RECEIVING:
+                _mac_bus_lock(self);
+                _get_recv_data_continue(self);
                 break;
             case RADIO_MAC_EVT_TRANSMITTER_READY:
                 self->bus.disf = DISF;
