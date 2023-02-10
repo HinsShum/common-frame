@@ -57,35 +57,12 @@ extern "C"
 #define ARRAY_SIZE(x)                   (sizeof(x) / sizeof((x)[0]))
 #define FIELD_SIZEOF(t, f)              (sizeof(((t *)0)->f))
 
-/* assert definition
- */
-#undef assert
-#ifdef NDEBUG
-#define assert(expr)                  	((void)0U)
-#else
-#define assert(expr)                  	do { \
-                                            if(!(expr)) { \
-                                                xlog_error("Assert in %s:%d\n", __FILE__, __LINE__); \
-                                                for(;;); \
-                                            } \
-                                        } while(0)
-#endif
-
 /* debug definition
  */
 #define COLOR_YELLOW                    "\033[33;22m"
 #define COLOR_RED                       "\033[31;22m"
 #define COLOR_GREEN                     "\033[32;22m"
 #define COLOR_WHITE                     "\033[37;22m"
-
-#define PRINT_BUFFER_CONTENT(color, tag, buf, length)   \
-        do {                                            \
-            xlog_cont("%s%s: ", color, tag);            \
-            for(uint32_t i = 0; i < length; ++i) {      \
-                xlog_cont("%02X ", buf[i]);             \
-            }                                           \
-            xlog_cont("\b\n");                          \
-        } while(0);
 
 /*---------- type define ----------*/
 typedef struct protocol_callback *protocol_callback_t;

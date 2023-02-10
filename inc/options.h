@@ -32,11 +32,45 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "misc.h"
+#include "errorno.h"
 #ifdef CONFIG_OPTIONS_FILE
 #include CONFIG_OPTIONS_FILE
 #endif
 
 /*---------- macro ----------*/
+#ifndef xlog_error
+#define xlog_error(x, y...)
+#endif
+#ifndef xlog_cont
+#define xlog_cont(x, y...)
+#endif
+
+/* assert definition
+ */
+#undef assert
+#ifdef NDEBUG
+#define assert(expr)                    ((void)0U)
+#else
+#define assert(expr)                  	do { \
+                                            if(!(expr)) { \
+                                                xlog_error("Assert in %s:%d\n", __FILE__, __LINE__); \
+                                                for(;;); \
+                                            } \
+                                        } while(0)
+#endif
+
+/* buffer content print definition
+ */
+#define PRINT_BUFFER_CONTENT(color, tag, buf, length)   \
+        do {                                            \
+            xlog_cont("%s%s: ", color, tag);            \
+            for(uint32_t i = 0; i < length; ++i) {      \
+                xlog_cont("%02X ", buf[i]);             \
+            }                                           \
+            xlog_cont("\b\n");                          \
+        } while(0);
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
